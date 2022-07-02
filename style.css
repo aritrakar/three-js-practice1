@@ -1,0 +1,14 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+body {
+    margin: 0;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    -webkit-font-smoothing: antialiased;
+}
+
+.font-space-mono {
+    font-family: 'Space Mono', monospace;
+}
