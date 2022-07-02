@@ -243,7 +243,7 @@ let starGeometry = undefined;
 
 function getStars() {
   starGeometry = new THREE.BufferGeometry();
-  const numStars = 6000;
+  const numStars = 4000;
   let vertices = [];
   for (let i = 0; i < numStars; i++) {
     vertices.push(
@@ -256,8 +256,13 @@ function getStars() {
     "position",
     new THREE.BufferAttribute(new Float32Array(vertices), 3)
   );
+  let vel = Array(numStars).fill(0);
+  for (let i = 0; i < vel.length; i += 3) {
+    vel[i] = 3;
+  }
   starGeometry.setAttribute(
     "velocity",
+    // new THREE.BufferAttribute(new Float32Array(vel), 3)
     new THREE.BufferAttribute(new Float32Array(2000), 1)
   );
   const starTexture = new THREE.TextureLoader().load("star.png");
@@ -269,8 +274,14 @@ function getStars() {
   return new THREE.Points(starGeometry, starMaterial);
 }
 
-let workClicked = false;
-let sun = undefined;
+let workClicked = false,
+  first = false;
+let sun = undefined,
+  stars = undefined;
+let frame = 0,
+  velocity = 1,
+  acceleration = 0.001;
+
 // View work button
 document.getElementById("work").addEventListener("mousedown", () => {
   // Set new camera position and rotation
@@ -282,72 +293,112 @@ document.getElementById("work").addEventListener("mousedown", () => {
     duration: 1.75,
   });
 
+  gsap.to(document.getElementById("media-buttons"), {
+    position: "fixed",
+    bottom: "2rem",
+    duration: 2,
+  });
+
   workClicked = true;
   // Add stars
-  scene.add(getStars());
+  stars = getStars();
+  scene.add(stars);
+  // console.log(stars.geometry.getAttribute("position").array);
+
   // Add sun
   sun = getSun();
-  scene.add(sun);
-});
+  // // scene.add(sun);
 
-let frame = 0;
+  // console.log("Waited for 2 seconds. velocity: ", velocity);
+  // let { array } = stars.geometry.getAttribute("position");
+  // for (let i = 1; i < array.length; i += 3) {
+  //   velocity *= 1.0001;
+  //   if (velocity < 20) array[i] -= velocity;
+  //   else array[i] -= 0.01;
+  //   if (array[i] < -200) array[i] = 400;
+  // }
+  // stars.geometry.attributes.position.needsUpdate = true;
+  // console.log("velocity: ", velocity);
+});
 
 function animate() {
   requestAnimationFrame(animate);
 
-  frame += 0.01;
-
-  if (workClicked) {
-    sun.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.001);
-    // camera.rotation.y -= 0.00005;
-  }
-
   renderer.render(scene, camera);
 
-  // Constantly changing background
-  const { array, originalPosition, randomValues } =
-    planeMesh.geometry.attributes.position;
-  for (let i = 0; i < array.length; i += 3) {
-    array[i] = originalPosition[i] + Math.cos(frame + randomValues[i]) * 0.001;
-    array[i + 1] =
-      originalPosition[i + 1] + Math.cos(frame + randomValues[i]) * 0.0001;
-    array[i + 2] =
-      originalPosition[i + 2] + Math.cos(frame + randomValues[i]) * 0.0005;
-  }
+  if (workClicked) {
+    // sun.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.001);
 
-  planeMesh.geometry.attributes.position.needsUpdate = true;
+    let { array } = stars.geometry.getAttribute("position");
 
-  // Highlight on hover effect
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObject(planeMesh);
-  if (intersects.length > 0) {
-    const { color } = intersects[0].object.geometry.attributes;
+    if (velocity <= 31) {
+      if (1 <= velocity && velocity < 3) velocity *= 1.0015;
+      else if (3 <= velocity && velocity < 7) velocity *= 1.05;
+      else if (7 <= velocity && velocity <= 30) velocity *= 2;
 
-    color.needsUpdate = true;
+      for (let i = 1; i < array.length; i += 3) {
+        if (velocity < 20) array[i] -= velocity;
+        if (array[i] < -200) array[i] = 400;
+      }
+      gsap.to(camera.position, { z: 6, duration: 3 }); //
+    } else {
+      for (let i = 1; i < array.length; i += 3) {
+        array[i] -= 0.01;
+        if (array[i] < -200) array[i] = 400;
+      }
+      scene.remove(planeMesh);
+    }
+    stars.geometry.attributes.position.needsUpdate = true;
 
-    const initialColor = { r: 0, g: 0.19, b: 0.4 };
-    const hoverColor = { r: 0.1, g: 0.5, b: 1 };
-    gsap.to(hoverColor, {
-      r: initialColor.r,
-      g: initialColor.g,
-      b: initialColor.b,
-      onUpdate: () => {
-        // vertex 1
-        color.setX(intersects[0].face.a, hoverColor.r);
-        color.setY(intersects[0].face.a, hoverColor.g);
-        color.setZ(intersects[0].face.a, hoverColor.b);
+    // camera.rotation.y -= 0.00005;
+  } else {
+    frame += 0.01;
+    // Constantly changing background
+    const { array, originalPosition, randomValues } =
+      planeMesh.geometry.attributes.position;
+    for (let i = 0; i < array.length; i += 3) {
+      array[i] =
+        originalPosition[i] + Math.cos(frame + randomValues[i]) * 0.001;
+      array[i + 1] =
+        originalPosition[i + 1] + Math.cos(frame + randomValues[i]) * 0.0001;
+      array[i + 2] =
+        originalPosition[i + 2] + Math.cos(frame + randomValues[i]) * 0.0005;
+    }
 
-        // vertex 2
-        color.setX(intersects[0].face.b, hoverColor.r);
-        color.setY(intersects[0].face.b, hoverColor.g);
-        color.setZ(intersects[0].face.b, hoverColor.b);
+    planeMesh.geometry.attributes.position.needsUpdate = true;
 
-        // vertex 3
-        color.setX(intersects[0].face.c, hoverColor.r);
-        color.setY(intersects[0].face.c, hoverColor.g);
-        color.setZ(intersects[0].face.c, hoverColor.b);
-      },
-    });
+    // Highlight on hover effect
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObject(planeMesh);
+    if (intersects.length > 0) {
+      const { color } = intersects[0].object.geometry.attributes;
+
+      color.needsUpdate = true;
+
+      const initialColor = { r: 0, g: 0.19, b: 0.4 };
+      const hoverColor = { r: 0.1, g: 0.5, b: 1 };
+      gsap.to(hoverColor, {
+        r: initialColor.r,
+        g: initialColor.g,
+        b: initialColor.b,
+        onUpdate: () => {
+          // vertex 1
+          color.setX(intersects[0].face.a, hoverColor.r);
+          color.setY(intersects[0].face.a, hoverColor.g);
+          color.setZ(intersects[0].face.a, hoverColor.b);
+
+          // vertex 2
+          color.setX(intersects[0].face.b, hoverColor.r);
+          color.setY(intersects[0].face.b, hoverColor.g);
+          color.setZ(intersects[0].face.b, hoverColor.b);
+
+          // vertex 3
+          color.setX(intersects[0].face.c, hoverColor.r);
+          color.setY(intersects[0].face.c, hoverColor.g);
+          color.setZ(intersects[0].face.c, hoverColor.b);
+        },
+      });
+    }
   }
 }
 

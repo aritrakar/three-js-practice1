@@ -2,32 +2,68 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="a.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./style.css" rel="stylesheet" />
     <title>Aritra Kar</title>
   </head>
   <body>
     <div id="app">
-      <div
-        id="text"
-        class="absolute text-white text-center"
-        style="top: 50%; left: 50%; transform: translate(-50%, -50%)"
-      >
-        <h1 class="text-6xl font-space-mono uppercase tracking-wide m-auto">
-          Aritra Kar
-        </h1>
-        <br />
-        <h3 class="text-xl font-mono">
-          Computer Science | University of Waterloo
-        </h3>
-        <br />
-        <button
-          id="work"
-          class="border px-4 py-2 rounded-lg text-sm font-space-mono uppercase hover:bg-white hover:text-gray-800 duration-200 inline-block"
-        >
-          View Work
-        </button>
+      <div id="content" class="">
+        <div id="text" class="text-white text-center">
+          <h1 class="text-6xl font-space-mono uppercase tracking-wide m-auto">
+            Aritra Kar
+          </h1>
+          <br />
+          <h3 class="text-xl font-mono">
+            Computer Science | University of Waterloo
+          </h3>
+          <br />
+          <button
+            id="work"
+            class="border px-4 py-2 rounded-lg text-sm font-space-mono uppercase hover:bg-white hover:text-gray-800 duration-200 inline-block"
+          >
+            View Work
+          </button>
+        </div>
+
+        <div id="media-buttons" class="flex mt-[-2rem]">
+          <a
+            id="linkedin"
+            href="https://www.linkedin.com/in/aritra-kar"
+            target="_blank"
+            class="hover:bg-[#2872a3]"
+            ><img src="./linkedin-24.png" alt="LinkedIn"
+          /></a>
+          <a
+            id="github"
+            href="https://www.github.com/aritrakar"
+            target="_blank"
+            type="noopener noreferrer"
+            ><img src="./github-24.png" alt="Github"
+          /></a>
+          <a
+            id="mail"
+            href="https://mail.google.com/mail/?view=cm&fs=1&to=a8kar@uwaterloo.ca"
+            target="_blank"
+            type="noopener noreferrer"
+            >@</a
+          >
+          <a
+            id="facebook"
+            href="https://www.facebook.com/profile.php?id=100014012589848"
+            target="_blank"
+            type="noopener noreferrer"
+            ><img src="./facebook-24.png" alt="Facebook"
+          /></a>
+          <a
+            id="instagram"
+            href="https://www.instagram.com/aritrakar28/"
+            target="_blank"
+            type="noopener noreferrer"
+            ><img src="./instagram-24.png" alt="Instagram"
+          /></a>
+        </div>
       </div>
     </div>
     <script type="module" src="./main.js"></script>
