@@ -148,7 +148,7 @@ function getSun() {
     planeMesh.position.y + 20,
     planeMesh.position.z + 10
   );
-  sunMesh.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.0005);
+  // sunMesh.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.005);
   return sunMesh;
 }
 
@@ -270,7 +270,7 @@ function getStars() {
 }
 
 let workClicked = false;
-
+let sun = undefined;
 // View work button
 document.getElementById("work").addEventListener("mousedown", () => {
   // Set new camera position and rotation
@@ -286,7 +286,8 @@ document.getElementById("work").addEventListener("mousedown", () => {
   // Add stars
   scene.add(getStars());
   // Add sun
-  scene.add(getSun());
+  sun = getSun();
+  scene.add(sun);
 });
 
 let frame = 0;
@@ -297,6 +298,7 @@ function animate() {
   frame += 0.01;
 
   if (workClicked) {
+    sun.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.005);
     // camera.rotation.y -= 0.00005;
   }
 
