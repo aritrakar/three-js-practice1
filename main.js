@@ -298,7 +298,7 @@ function animate() {
   frame += 0.01;
 
   if (workClicked) {
-    sun.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.005);
+    sun.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.001);
     // camera.rotation.y -= 0.00005;
   }
 
