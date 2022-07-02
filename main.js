@@ -82,6 +82,7 @@ gui.add(world.planeMesh, "widthSegments", 1, 20).onChange(generatePlane);
 gui.add(world.planeMesh, "heightSegments", 1, 20).onChange(generatePlane);
 
 */
+
 const raycaster = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -90,23 +91,12 @@ const camera = new THREE.PerspectiveCamera(
   0.1,
   1000
 );
-
-// const renderer = new THREE.WebGLRenderer({
-//   canvas: document.querySelector("#bg"),
-// });
-
 const renderer = new THREE.WebGLRenderer();
 
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 camera.position.setZ(7);
 document.body.appendChild(renderer.domElement);
-
-// Box
-// const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
-// const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-// const box = new THREE.Mesh(boxGeometry, boxMaterial);
-// scene.add(box);
 
 // Light
 const light = new THREE.DirectionalLight(0xffffff, 1);
@@ -133,10 +123,36 @@ generatePlane();
 // Controls
 // const controls = new OrbitControls(camera, renderer.domElement);
 
+// For raycaster
 const mouse = { x: undefined, y: undefined };
 
-let frame = 0;
+addEventListener("mousemove", (event) => {
+  // Normalize mouse coordinates
+  mouse.x = (event.clientX / innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / innerHeight) * 2 + 1;
+});
 
+// Sun
+function getSun() {
+  const sunGeometry = new THREE.SphereGeometry(3.5);
+  const sunTexture = new THREE.TextureLoader().load("sunTexture.jpg");
+  const sunMaterial = new THREE.MeshStandardMaterial({
+    // color: 0xf5bc6c,
+    map: sunTexture,
+    emissive: 0xf5bc6c,
+    emissiveIntensity: 0.7,
+  });
+  const sunMesh = new THREE.Mesh(sunGeometry, sunMaterial);
+  sunMesh.position.set(
+    planeMesh.position.x,
+    planeMesh.position.y + 20,
+    planeMesh.position.z + 10
+  );
+  sunMesh.rotateOnAxis(new THREE.Vector3(0, 0, 7).normalize(), 0.0005);
+  return sunMesh;
+}
+
+/*
 function addStar() {
   const geometry = new THREE.SphereGeometry(0.25, 24, 24);
   const material = new THREE.MeshStandardMaterial({
@@ -154,31 +170,82 @@ function addStar() {
   scene.add(star);
 }
 
-// function addStar2() {
-//   const starGeometry = new THREE.BufferGeometry();
-//   for (let i = 0; i < 6000; i++) {
-//     let star = new THREE.Vector3(
-//       Math.random() * 600 - 300,
-//       Math.random() * 600 - 300,
-//       Math.random() * 600 - 300
-//     );
-//     starGeometry.vertices.push(star);
-//   }
-//   const starTexture = new THREE.TextureLoader().load("star.jpg");
-//   let starMaterial = new THREE.PointsMaterial({
-//     color: 0xaaaaaa,
-//     size: 0.7,
-//     map: starTexture,
-//   });
-//   return new THREE.Points(starGeometry, starMaterial);
-// }
+function getStars() {
+  Array(200).fill().forEach(addStar);
+}
+*/
+
+/*
+// Doesn't work
+function addStar2() {
+  const starGeometry = new THREE.BufferGeometry();
+  for (let i = 0; i < 6000; i++) {
+    let star = new THREE.Vector3(
+      Math.random() * 600 - 300,
+      Math.random() * 600 - 300,
+      Math.random() * 600 - 300
+    );
+    starGeometry.vertices.push(star);
+  }
+  const starTexture = new THREE.TextureLoader().load("star.jpg");
+  let starMaterial = new THREE.PointsMaterial({
+    color: 0xaaaaaa,
+    size: 0.7,
+    map: starTexture,
+  });
+  return new THREE.Points(starGeometry, starMaterial);
+}
+*/
+
+/*
+function starField() {
+  let LINE_COUNT = 1000;
+  let geom = new THREE.BufferGeometry();
+  geom.setAttribute(
+    "position",
+    new THREE.BufferAttribute(new Float32Array(6 * LINE_COUNT), 3)
+  );
+  geom.setAttribute(
+    "velocity",
+    new THREE.BufferAttribute(new Float32Array(2 * LINE_COUNT), 1)
+  );
+  let pa = geom.getAttribute("position").array;
+  let va = geom.getAttribute("velocity").array;
+
+  for (let lineIndex = 0; lineIndex < LINE_COUNT; lineIndex++) {
+    let x = Math.random() * 40 - 20;
+    let y = Math.random() * 20 - 10;
+    let z = Math.random() * 50 - 10;
+    let xx = x,
+      yy = y,
+      zz = z;
+    // line start
+    pa[6 * lineIndex] = x;
+    pa[6 * lineIndex + 1] = y;
+    pa[6 * lineIndex + 2] = z;
+
+    // line end
+    pa[6 * lineIndex + 3] = xx;
+    pa[6 * lineIndex + 4] = yy;
+    pa[6 * lineIndex + 5] = zz;
+
+    // velocity
+    va[2 * lineIndex] = va[2 * lineIndex + 1] = 0;
+  }
+  const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+  const lines = new THREE.LineSegments(geom, lineMaterial);
+  scene.add(lines);
+  console.log("Added star field");
+}
+*/
 
 let starGeometry = undefined;
 
-function addStar2() {
+function getStars() {
   starGeometry = new THREE.BufferGeometry();
+  const numStars = 6000;
   let vertices = [];
-  for (let i = 0; i < 6000; i++) {
+  for (let i = 0; i < numStars; i++) {
     vertices.push(
       Math.random() * 600 - 300,
       Math.random() * 600 - 300,
@@ -189,9 +256,11 @@ function addStar2() {
     "position",
     new THREE.BufferAttribute(new Float32Array(vertices), 3)
   );
-  console.log("Loading star.png");
+  starGeometry.setAttribute(
+    "velocity",
+    new THREE.BufferAttribute(new Float32Array(2000), 1)
+  );
   const starTexture = new THREE.TextureLoader().load("star.png");
-  console.log("Loaded star.png: ", starTexture);
   const starMaterial = new THREE.PointsMaterial({
     color: 0xaaaaaa,
     size: 0.7,
@@ -200,11 +269,11 @@ function addStar2() {
   return new THREE.Points(starGeometry, starMaterial);
 }
 
-function getStars() {
-  Array(200).fill().forEach(addStar);
-}
+let workClicked = false;
 
+// View work button
 document.getElementById("work").addEventListener("mousedown", () => {
+  // Set new camera position and rotation
   gsap.to(camera.position, { z: 2, y: -3, duration: 1.75 });
   gsap.to(camera.rotation, { x: 1.75, duration: 1.5 });
   gsap.to(document.getElementById("text"), {
@@ -212,26 +281,28 @@ document.getElementById("work").addEventListener("mousedown", () => {
     display: "none",
     duration: 1.75,
   });
-  // getStars();
-  scene.add(addStar2());
+
+  workClicked = true;
+  // Add stars
+  scene.add(getStars());
+  // Add sun
+  scene.add(getSun());
 });
+
+let frame = 0;
 
 function animate() {
   requestAnimationFrame(animate);
 
   frame += 0.01;
 
-  // controls.update();
-
-  // if(starGeometry){
-  //   starGeometry.vertices.forEach(p => {
-  //     p.velocity += 0.02;
-  //     p.y -= p.velocity
-  //   })
-  // }
+  if (workClicked) {
+    // camera.rotation.y -= 0.00005;
+  }
 
   renderer.render(scene, camera);
 
+  // Constantly changing background
   const { array, originalPosition, randomValues } =
     planeMesh.geometry.attributes.position;
   for (let i = 0; i < array.length; i += 3) {
@@ -244,6 +315,7 @@ function animate() {
 
   planeMesh.geometry.attributes.position.needsUpdate = true;
 
+  // Highlight on hover effect
   raycaster.setFromCamera(mouse, camera);
   const intersects = raycaster.intersectObject(planeMesh);
   if (intersects.length > 0) {
@@ -278,9 +350,3 @@ function animate() {
 }
 
 animate();
-
-addEventListener("mousemove", (event) => {
-  // Normalize mouse coordinates
-  mouse.x = (event.clientX / innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / innerHeight) * 2 + 1;
-});
