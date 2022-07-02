@@ -190,7 +190,7 @@ function addStar2() {
     new THREE.BufferAttribute(new Float32Array(vertices), 3)
   );
   console.log("Loading star.png");
-  const starTexture = new THREE.TextureLoader().load("star.png");
+  const starTexture = new THREE.TextureLoader().load("./public/star.png");
   console.log("Loaded star.png: ", starTexture);
   const starMaterial = new THREE.PointsMaterial({
     color: 0xaaaaaa,
